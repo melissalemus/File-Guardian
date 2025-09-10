@@ -1,0 +1,125 @@
+## Coded process through Visual Studio Code (Python Installed)
+
+import hashlib
+from cryptography.fernet import Fernet
+
+
+#  FILE INTEGRITY CHECKER:
+def generate_hash(file_path):
+    """Generate SHA-256 hash for a given file."""
+    sha256 = hashlib.sha256()
+    with open(file_path, "rb") as f:
+        for chunk in iter(lambda: f.read(4096), b""):
+            sha256.update(chunk)
+    return sha256.hexdigest()
+
+
+def save_hash(file_path, hash_file="hashes.txt"):
+    """Save file hash to a text file."""
+    file_hash = generate_hash(file_path)
+    with open(hash_file, "a") as f:
+        f.write(f"{file_path},{file_hash}\n")
+    print(f"✅ Hash saved for {file_path}")
+
+
+def verify_file(file_path, hash_file="hashes.txt"):
+    """Check if file integrity is intact."""
+    current_hash = generate_hash(file_path)
+    try:
+        with open(hash_file, "r") as f:
+            for line in f:
+                saved_path, saved_hash = line.strip().split(",")
+                if saved_path == file_path:
+                    if current_hash == saved_hash:
+                        print("✅ File is intact (no changes).")
+                    else:
+                        print("⚠️ WARNING: File has been modified!")
+                    return
+        print("❌ No hash found for this file.")
+    except FileNotFoundError:
+        print("❌ No hash database found yet.")
+
+
+# ENCRYPTION TOOL:
+def generate_key(key_file="secret.key"):
+    """Generate and save an AES encryption key."""
+    key = Fernet.generate_key()
+    with open(key_file, "wb") as f:
+        f.write(key)
+    print("🔑 Key generated and saved!")
+
+
+def load_key(key_file="secret.key"):
+    """Load the AES key."""
+    return open(key_file, "rb").read()
+
+
+def encrypt_file(file_path, key_file="secret.key"):
+    """Encrypt a file."""
+    key = load_key(key_file)
+    fernet = Fernet(key)
+
+    with open(file_path, "rb") as f:
+        data = f.read()
+
+    encrypted = fernet.encrypt(data)
+
+    with open(file_path + ".enc", "wb") as f:
+        f.write(encrypted)
+
+    print(f"🔒 Encrypted file saved as {file_path}.enc")
+
+
+def decrypt_file(file_path, key_file="secret.key"):
+    """Decrypt a file."""
+    key = load_key(key_file)
+    fernet = Fernet(key)
+
+    with open(file_path, "rb") as f:
+        encrypted_data = f.read()
+
+    decrypted = fernet.decrypt(encrypted_data)
+
+    original_name = file_path.replace(".enc", "_decrypted")
+    with open(original_name, "wb") as f:
+        f.write(decrypted)
+
+    print(f"🔓 Decrypted file saved as {original_name}")
+
+
+# MAIN MENU:
+def main():
+    while True:
+        print("\n==== Cybersecurity Tool ====")
+        print("1. Save file hash")
+        print("2. Verify file integrity")
+        print("3. Generate encryption key")
+        print("4. Encrypt file")
+        print("5. Decrypt file")
+        print("6. Exit")
+
+        choice = input("Select an option (1-6): ")
+
+        if choice == "1":
+            file_path = input("Enter file path: ")
+            save_hash(file_path)
+        elif choice == "2":
+            file_path = input("Enter file path: ")
+            verify_file(file_path)
+        elif choice == "3":
+            generate_key()
+        elif choice == "4":
+            file_path = input("Enter file path: ")
+            encrypt_file(file_path)
+        elif choice == "5":
+            file_path = input("Enter file path (must end with .enc): ")
+            decrypt_file(file_path)
+        elif choice == "6":
+            print("👋 Exiting program...")
+            break
+        else:
+            print("❌ Invalid choice, try again.")
+
+
+if __name__ == "__main__":
+    main()
