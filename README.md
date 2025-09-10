@@ -72,4 +72,9 @@ Before running, make sure you have installed:
 
 -  File restores as example.txt.
 
-## SCREENSHOT of what the app currently looks like 
+## Screenshot of what the app currently looks like 
+
+![FileGuardian Screenshot](https://github.com/melissalemus/File-Guardian/raw/main/FileGuardian1.png)
+
+
+
